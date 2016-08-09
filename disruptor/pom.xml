@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>com.wei.warhouse.disruptor</artifactId>
+    <artifactId>disruptor</artifactId>
 <dependencies>
     <!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
     <dependency>
