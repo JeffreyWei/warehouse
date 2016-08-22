@@ -13,6 +13,7 @@ public class ZkLoackWithCuratorDemo {
 		InterProcessMutex lock = new InterProcessMutex(ZkClient.getCLIENT(), lock_path);
 		try {
 			lock.acquire();
+
 		} catch (Exception e) {
 
 		}

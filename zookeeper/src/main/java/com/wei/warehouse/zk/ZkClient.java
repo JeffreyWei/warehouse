@@ -3,6 +3,7 @@ package com.wei.warehouse.zk;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.utils.CloseableUtils;
 
 /**
  * Created by wei on 16/8/9.
@@ -17,5 +18,9 @@ public class ZkClient {
 
 	public static CuratorFramework getCLIENT() {
 		return CLIENT;
+	}
+
+	public static void close() {
+		CloseableUtils.closeQuietly(CLIENT);
 	}
 }
