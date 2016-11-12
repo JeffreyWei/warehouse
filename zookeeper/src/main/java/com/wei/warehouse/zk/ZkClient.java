@@ -12,7 +12,7 @@ public class ZkClient {
 	private static CuratorFramework CLIENT = null;
 
 	static {
-		CLIENT = CuratorFrameworkFactory.newClient("192.168.220.164:2181", 5000, 3000, new ExponentialBackoffRetry(1000, 3));
+		CLIENT = CuratorFrameworkFactory.newClient("127.0.0.1:2181", 5000, 3000, new ExponentialBackoffRetry(1000, 3));
 		CLIENT.start();
 	}
 
