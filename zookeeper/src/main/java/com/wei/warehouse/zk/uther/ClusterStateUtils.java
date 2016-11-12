@@ -6,10 +6,10 @@ import com.esotericsoftware.kryo.io.Output;
 import com.wei.warehouse.zk.ZkClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,10 +36,38 @@ public final class ClusterStateUtils {
 		this.businessType = "/" + businessType;
 		this.client = ZkClient.getCLIENT();
 		this.regions = regions;
-		kryoSerialize.register(Date.class,97);
+		kryoSerialize.register(Date.class, 97);
 		initWorkPath();
 	}
 
+	/**
+	 * 从字节数组获取对象
+	 *
+	 * @EditTime 2007-8-13 上午11:46:34
+	 */
+	public static <T> Object getObjectFromBytes(byte[] objBytes,Class<T> cls) throws Exception {
+		if (objBytes == null || objBytes.length == 0) {
+			return null;
+		}
+		ByteArrayInputStream bi = new ByteArrayInputStream(objBytes);
+		ObjectInputStream oi = new ObjectInputStream(bi);
+		return (T) oi.readObject();
+	}
+
+	/**
+	 * 从对象获取一个字节数组
+	 *
+	 * @EditTime 2007-8-13 上午11:46:56
+	 */
+	public static <T > byte[] getBytesFromObject(T obj) throws Exception {
+		if (obj == null) {
+			return null;
+		}
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ObjectOutputStream oo = new ObjectOutputStream(bo);
+		oo.writeObject(obj);
+		return bo.toByteArray();
+	}
 
 	/**
 	 * 初始化工作目录
@@ -72,8 +100,7 @@ public final class ClusterStateUtils {
 	public boolean acquire(String lockName) {
 		boolean success = false;
 		try {
-			InterProcessMutex lock = new InterProcessMutex(client, namespace + businessType + lockpath + "/" + lockName);
-			lock.acquire();
+			client.create().withMode(CreateMode.EPHEMERAL).forPath(namespace + businessType + lockpath + "/" + lockName);
 			success = true;
 		} catch (Exception e) {
 
@@ -90,11 +117,10 @@ public final class ClusterStateUtils {
 	public boolean release(String lockName) {
 		boolean success = false;
 		try {
-			InterProcessMutex lock = new InterProcessMutex(client, namespace + businessType + lockpath + "/" + lockName);
-			lock.release();
+			client.delete().forPath(namespace + businessType + lockpath + "/" + lockName);
 			success = true;
 		} catch (Exception e) {
-
+			System.out.println(e);
 		}
 		return success;
 	}
@@ -152,9 +178,9 @@ public final class ClusterStateUtils {
 		Input ois = null;
 		try {
 			bytes = get(region, key);
-			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-			ois = new Input(bais);
-			obj = kryoSerialize.readObject(ois, targetClass);
+//			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+//			ois = new Input(bais);
+			obj = (T) getObjectFromBytes(bytes, targetClass);//kryoSerialize.readObject(ois, targetClass);
 		} catch (Exception e) {
 			System.out.println(e);
 		} finally {
@@ -204,7 +230,7 @@ public final class ClusterStateUtils {
 			output = new Output(baos);
 			kryoSerialize.writeClassAndObject(output, obj);
 			output.flush();
-			set(region, key, baos.toByteArray());
+			set(region, key, getBytesFromObject(obj));
 			success = true;
 		} catch (Exception e) {
 

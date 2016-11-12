@@ -7,10 +7,11 @@ import java.util.Map;
 /**
  * Created by wei on 16/6/15.
  */
-public class MobileStateInfo{
+public class MobileStateInfo implements Serializable{
 	public MobileStateInfo() {
 	}
 
+	private static final long serialVersionUID = -2239259808023361336L;
 	private Date date;
 	private Long customerID;
 	private String method;
